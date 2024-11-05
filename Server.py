@@ -1,7 +1,8 @@
 import socket
 import threading
 import time
-SERVER_IP = '127.0.0.1'  
+
+SERVER_IP = '127.0.0.1'
 SERVER_PORT = 12345
 clients = []
 scores = {}
@@ -30,13 +31,14 @@ def handle_client(client_socket, username):
     while True:
         try:
             message = client_socket.recv(1024).decode()
-           
+            # Check the received answer and validate it
             check_answer(message, username)
         except:
-           
+            # Handle client disconnection
             print(f"{username} has left the game.")
             clients.remove((client_socket, username))
             break
+
 def broadcast(message):
     for client_socket, _ in clients:
         client_socket.send(message.encode())
@@ -47,17 +49,18 @@ def start_quiz():
         start_time = time.time()
         answered = False
 
-        while time.time() - start_time < 30:  
+        while time.time() - start_time < 30:  # 30 seconds limit
             if answered:
                 break
 
-        
+        # After the time limit, send the correct answer if unanswered
         if not answered:
             broadcast(f"Time's up! The correct answer was: {question['answer']}")
     display_scores()
 
 def check_answer(answer, username):
-    if answer == quiz_questions[0]["answer"]:
+    current_question = quiz_questions[len(scores) % len(quiz_questions)]  # Ensures questions cycle
+    if answer.strip().lower() == current_question["answer"].lower():
         scores[username] += 1
         broadcast(f"{username} got it right!")
 
@@ -65,9 +68,10 @@ def display_scores():
     scores_message = "\n".join([f"{user}: {score}" for user, score in scores.items()])
     broadcast(f"Scores:\n{scores_message}")
 
-
 def main():
     server_socket = setup_server()
+
+    # Accept real client connections
     while len(clients) < 3:
         client_socket, addr = server_socket.accept()
         username = client_socket.recv(1024).decode()
@@ -76,3 +80,6 @@ def main():
 
     start_quiz()
     server_socket.close()
+
+if __name__ == "__main__":
+    main()
