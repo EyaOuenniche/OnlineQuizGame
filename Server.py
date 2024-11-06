@@ -2,7 +2,7 @@ import socket
 import threading
 import time
 
-SERVER_IP = '192.168.1.22'
+SERVER_IP = '192.168.50.203'
 SERVER_PORT = 12345
 clients = []
 scores = {}

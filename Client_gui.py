@@ -5,7 +5,7 @@ from tkinter import messagebox
 import time
 
 # Server IP and Port
-SERVER_IP = '192.168.1.22'
+SERVER_IP = '192.168.50.203'
 SERVER_PORT = 12345
 
 # Initialize global variables
