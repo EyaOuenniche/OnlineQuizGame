@@ -1,1 +1,8 @@
 What is the capital of France?|Paris
+What is 5 + 7?|12
+Who wrote 'To Kill a Mockingbird'?|Harper Lee
+What is the largest planet in our solar system?|Jupiter
+In which year did World War II end?|1945
+What is the boiling point of water in Celsius?|100
+Who painted the Mona Lisa?|Leonardo da Vinci
+What is the currency of Japan?|Yen
