@@ -2,7 +2,7 @@ import socket
 import threading
 import time
 
-SERVER_IP = '192.168.50.203'
+SERVER_IP = '192.168.1.104'
 SERVER_PORT = 12345
 clients = []
 scores = {}
@@ -38,7 +38,7 @@ def handle_client(client_socket, username):
         try:
             message = client_socket.recv(1024).decode()
             with lock:
-                check_answer(message, username)  # Check if the answer is correct
+                check_answer(message, username)  
         except:
             print(f"{username} has left the game.")
             clients.remove((client_socket, username))
@@ -48,6 +48,11 @@ def handle_client(client_socket, username):
 def broadcast(message):
     for client_socket, _ in clients:
         client_socket.send(message.encode())
+        
+#Send score to each client individually
+def send_individual_score(client_socket, username):
+    message = f"Your score: {scores[username]}"
+    client_socket.send(message.encode())
 
 # Start the quiz game
 def start_quiz():
@@ -55,43 +60,42 @@ def start_quiz():
     while current_question_index < len(quiz_questions):
         question = quiz_questions[current_question_index]
         global first_correct_answer
-        first_correct_answer = None  # Reset for each question
+        first_correct_answer = None  
         broadcast(f"Question: {question['question']}")
         start_time = time.time()
 
-        # Wait for 30 seconds for answers
         while time.time() - start_time < 30:
-            time.sleep(1)  # Avoid busy-waiting and allow other threads to operate
+            time.sleep(1)  
 
-        # After time limit, announce correct answer if unanswered
         if first_correct_answer is None:
             broadcast(f"Time's up! The correct answer was: {question['answer']}")
         else:
             broadcast(f"{first_correct_answer} answered correctly first!")
+        
+        for client_socket, username in clients:
+            send_individual_score(client_socket, username)
 
-        # Move to the next question
         current_question_index += 1
-        time.sleep(2)  # Small pause before next question
+        time.sleep(2)  
 
-    display_final_scores()  # End of quiz, display final scores
+    print("All questions complete, displaying final leaderboard...")
+    display_final_scores()  
 
 # Check client answer
 def check_answer(answer, username):
     global first_correct_answer
     if current_question_index < len(quiz_questions):
         current_question = quiz_questions[current_question_index]
-
-        # Check answer and ensure only the first correct answer is rewarded
         if answer.strip().lower() == current_question["answer"].lower():
-            if first_correct_answer is None:  # If no one has answered correctly yet
-                first_correct_answer = username  # Mark this player as the first correct answer
-                scores[username] += 1  # Give this player a point
+            if first_correct_answer is None:  
+                first_correct_answer = username  
+                scores[username] += 1  
                 broadcast(f"{username} answered correctly!")
 
 # Display final scores
 def display_final_scores():
+    print("Displaying final leaderboard...")
     sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-    # Create a final message for the clients
     final_scores_message = "🏆 Final Results:\n"
     podium_positions = ["🥇 First Place: ", "🥈 Second Place: ", "🥉 Third Place: "]
 
